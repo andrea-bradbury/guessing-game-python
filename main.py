@@ -10,49 +10,76 @@ Because of the simplicity of this game, you could implement a hint.
 
 import random
 import math
+from breezypythongui import EasyFrame
 
-#Create and store the random number
-randomNumber = random.randint(1,100)
+class GuessingGame(EasyFrame):
 
-#Keep track of guesses
-guessCount = 0
+    def __init__(self):
 
-#Max guesses is 5
-maxGuesses = 5
+        EasyFrame.__init__(self, title="Guessing Game", width=500, height=100, resizable=False)
 
-#Player's guess
-guess = 0
+        self.guessLabel = self.addLabel(text="Guess: ", row=0, column=0)
+        self.guessField = self.addIntegerField(value=0, row=0, column=1)
 
-#Players past guesses
-guessList = []
+        self.resultLabel = self.addLabel(text="", row=1, column=0, background="White")
+
+        self.guessesLeftLabel = self.addLabel(text="Guesses: ", row=2, column=0, sticky="W")
+        self.addButton(text="Guess!", row=2, column=1, command=self.MakeGuess)
+
+        # Create and store the random number
+        self.randomNumber = random.randint(1, 100)
+
+        # Keep track of guesses
+        self.guessCount = 0
+
+        # Max guesses is 5
+        self.maxGuesses = 5
+
+        # Player's guess
+        self.guess = 0
+
+        # Player's past guesses
+        self.guessList = []
+
+        # Displays default guesses
+        self.guessesLeftLabel["text"] = f"Guesses: {self.maxGuesses}"
+
+    def UpdateGame(self):
+        self.guessesLeftLabel["text"] = f"Guesses: {self.maxGuesses - self.guessCount}"
+
+    def MakeGuess(self):
+        self.guess = self.guessField.getNumber()
+
+        if self.guessCount >= self.maxGuesses:
+            return
+
+        if math.isnan(self.guess):
+            self.resultLabel["text"] = "Please enter a valid number."
+        elif self.guess < 1 or self.guess > 99:
+            self.resultLabel["text"] = "Outside of bounds. Please enter a guess between 1 - 99."
+        elif self.guess in self.guessList:
+            self.resultLabel["text"] = "You have already guessed this number."
+        elif self.guess == self.randomNumber:
+            self.guessCount += 1
+            self.resultLabel["text"] = f"Congratulations, you guessed the number in {self.guessCount} guesses!"
+            self.UpdateGame()
+        elif self.guess < self.randomNumber:
+            self.guessCount += 1
+            self.guessList.append(self.guess)
+            self.resultLabel["text"] = "Incorrect, guess higher!"
+            self.UpdateGame()
+        elif self.guess > self.randomNumber:
+            self.guessCount += 1
+            self.guessList.append(self.guess)
+            self.resultLabel["text"] = "Incorrect, guess lower!"
+            self.UpdateGame()
+
+        if self.guessCount >= self.maxGuesses:
+            self.resultLabel["text"] = f"Game over, you ran out of guesses!\nThe number was: {self.randomNumber}"
 
 
-#Main functionality of the game
-while guessCount < maxGuesses:
-    guess = int(input("Enter a guess between 1 - 99: "))
-    if (math.isnan(guess)):
-        print("Please enter a valid number.")
-        print("You have " + str(maxGuesses - guessCount) + " guesses left")
-    elif (guess < 1 or guess > 99):
-        print("Outside of bounds. Please guess between 1-99.")
-        print("You have " + str(maxGuesses - guessCount) + " guesses left")
-    elif (guess in guessList):
-        print("You have already guessed this number.")
-        print("You have " + str(maxGuesses - guessCount) + " guesses left")
-    elif (guess == randomNumber):
-        guessCount += 1
-        print( "Congratulations, you guessed the number " + randomNumber + " in " + guessCount + " guesses.")
-    elif (guess < randomNumber):
-        guessCount += 1
-        guessList.append(guess)
-        print("Incorrect...Guess higher!")
-        print("You have " + str(maxGuesses - guessCount) + " guesses left")
-    elif (guess > randomNumber):
-        guessCount += 1
-        guessList.append(guess)
-        print("Incorrect...Guess lower!")
-        print("You have " + str(maxGuesses - guessCount) + " guesses left")
-print("Game over. You ran out of guesses! ")
-print("The number was " + str(randomNumber))
+game = GuessingGame()
+
+game.mainloop()
 
 
